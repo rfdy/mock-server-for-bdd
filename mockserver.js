@@ -1,6 +1,6 @@
 /**
  * Mock server.
- * Handles requests on port 2000. Will use mock file if it finds one in the mocklist file. If not, will forward to the real api.
+ * Handles requests on port 2100. Will use mock file if it finds one in the mocklist file. If not, will forward to the real api.
  * Will check mock files for "X-Path:" header and create a mapping from that path to the mock file.
  *
  * Starting mockserver will default port 2100
