@@ -39,13 +39,30 @@ X-Path: needs to match the full GET query
 #Running
 To start the mock proxy on its own use
 
+```
 node mockserver.js -api [api name]
+```
 
 For example:
 
+```
 node mockserver.js -api wikipedia.org
+```
 
 #Using with BDDs
 
+The mock proxy was written with BDD in mind. Included is a sample scenario and required steps to start the mocking proxy.
+
 ##Behat
 
+To install behat run
+
+```
+composer install
+```
+
+To execute the tests run
+
+```
+behat
+```
