@@ -1,0 +1,4 @@
+wikipedia.org:
+  url: http://en.wikipedia.org
+  port: 2100
+  mockListFile: wikipedia_mocks.txt
