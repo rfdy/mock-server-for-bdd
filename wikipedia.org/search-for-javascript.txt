@@ -1,0 +1,21 @@
+HTTP/1.1 200 OK
+server: Apache
+x-powered-by: HHVM/3.3.1
+cache-control: private
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+vary: Accept-Encoding,X-Forwarded-Proto,Cookie
+content-type: application/json; charset=utf-8
+x-varnish: 2720672100, 492904633
+via: 1.1 varnish, 1.1 varnish
+transfer-encoding: chunked
+date: Wed, 17 Dec 2014 18:45:35 GMT
+age: 0
+connection: keep-alive
+x-cache: cp1065 miss (0), cp1055 frontend miss (0)
+x-analytics: php=hhvm
+set-cookie: GeoIP=CA:Montr_al:45.5000:-73.5833:v4; Path=/; Domain=.wikipedia.org
+X-Name: search-for-javascript.txt
+X-Path: /w/api.php?format=json&action=query&titles=javascript&prop=revisions&rvprop=content&continue
+
+{"source":"MOCK", "batchcomplete":"","query":{"normalized":[{"from":"javascript","to":"Javascript"}],"pages":{"16109":{"pageid":16109,"ns":0,"title":"Javascript","revisions":[{"contentformat":"text/x-wiki","contentmodel":"wikitext","*":"#REDIRECT [[JavaScript]] {{R from other capitalisation}}"}]}}}}
