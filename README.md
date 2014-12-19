@@ -19,7 +19,7 @@ mock proxy depends on js-yaml, install by running
 npm install js-yaml
 ```
 
-On Windows make sure that this folder c:\Users\[user name]\AppData\Roaming\npm exists first
+On Windows make sure that this folder c:\Users\\[user name]\AppData\Roaming\npm exists first
 
 #Usage
 
