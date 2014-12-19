@@ -11,6 +11,16 @@ Major features:
 1. Any requests that do not match will be forwarded to the API
 1. Any forwarded request will be saved in order to provider a starting point for mocking
 
+#Installation
+
+mock proxy depends on js-yaml, install by running
+
+```
+npm install js-yaml
+```
+
+On Windows make sure that this folder c:\Users\[user name]\AppData\Roaming\npm exists first
+
 #Usage
 
 ##Configuration

@@ -5,7 +5,8 @@
     "require": {
         "behat/behat": "2.4.*@stable",
         "behat/mink":                   "~1.5",
-        "behat/mink-selenium2-driver":  "~1.1"
+        "behat/mink-selenium2-driver":  "~1.1",
+        "guzzlehttp/guzzle": "~5.0"
 
     },
     "minimum-stability": "dev",

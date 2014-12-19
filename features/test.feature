@@ -11,8 +11,14 @@ Feature: Initial BDDs
     And I enable "wikipedia.org" mockserver
 
 @test
-Scenario: Open up a deal
+Scenario: Try calling the API
 
-  Given I do something
-  When Something happens
-  Then I check that it is what I have expected
+  Given Everything is setup
+  When I go to the "w/api.php?format=json&action=query&titles=javascript&prop=revisions&rvprop=content&continue"
+  Then I expect to get http code "200"
+  And I expect the response to contain "MOCK"
+
+  Given Everything is setup
+  When I go to the "w/api.php?format=json&action=query&titles=ruby&prop=revisions&rvprop=content&continue"
+  Then I expect to get http code "200"
+  And I expect the response to not contain "MOCK"

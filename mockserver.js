@@ -222,6 +222,7 @@ function getStatusText(statusCode) {
 function processUrl(url) {
     var sub = url.substring(1);
     sub = sub.replace(/\//g, "-");
+    sub = sub.replace(/\?/g, "-");
     return "/" + sub;
 
 }

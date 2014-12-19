@@ -22,12 +22,39 @@ require_once('FeatureContext.php');
 class MocksContext extends BehatContext {
 
     private $mocklistfiles = ["wikipedia_mocks.txt"];
+
+    private function win_kill($pid){
+        $wmi=new COM("winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\cimv2");
+        $procs=$wmi->ExecQuery("SELECT * FROM Win32_Process WHERE ProcessId='".$pid."'");
+        foreach($procs as $proc)
+            $proc->Terminate();
+    }
+
+    private function win_kill_node() {
+        $wmi=new COM("winmgmts:{impersonationLevel=impersonate}!\\\\.\\root\\cimv2");
+        $procs=$wmi->ExecQuery("SELECT * FROM Win32_Process WHERE Name='node.exe'");
+        foreach($procs as $proc)
+            $proc->Terminate();
+    }
+
+    private function on_win() {
+        return (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+    }
+
     /**
      * @Given /^I enable "([^"]*)" mockserver$/
      */
     public function iEnableMockserver($arg1)
     {
-        $pid = shell_exec("node mockserver.js -api " . $arg1 . " > /dev/null & echo $!");
+        if ($this->on_win()) {
+            $pid = popen("start node mockserver.js -api " . $arg1,"r");
+
+            echo "started "."node mockserver.js -api " . $arg1."\n";
+
+        } else {
+            $pid = shell_exec("node mockserver.js -api " . $arg1 . " > /dev/null & echo $!");
+        }
+
         $this->mock_pids[$arg1] = $pid;
     }
 
@@ -40,17 +67,26 @@ class MocksContext extends BehatContext {
     /** @AfterScenario */
     public function after($event)
     {
-        foreach ($this->mock_pids as $pid) {
-            if ($this->is_running($pid)) {
-                exec("kill -KILL $pid");
+        if (isset($this->mock_pids)) {
+            foreach ($this->mock_pids as $pid) {
+
+                if ($this->on_win()) {
+                    $this->win_kill_node();
+                    pclose($pid);
+                } else {
+                    if ($this->is_running($pid)) {
+                        exec("kill -KILL $pid");
+                    }
+                }
+
             }
         }
+
         // Wipe all mocklist files
         foreach ($this->mocklistfiles as $file) {
             // Delete them
             file_put_contents($file, "");
         }
-
     }
 
         // TODO: How to verify mock is used?

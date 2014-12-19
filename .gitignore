@@ -1,4 +1,7 @@
-composer.phar/*
+composer.phar
+generated/*
 vendor/*
 .idea/*
 bin/*
+behat
+composer
