@@ -53,6 +53,8 @@ class MocksContext extends BehatContext {
 
         } else {
             $pid = shell_exec("node mockserver.js -api " . $arg1 . " > /dev/null & echo $!");
+            //need to add a sleep here as the server needs sometime to come up
+            sleep(1);
         }
 
         $this->mock_pids[$arg1] = $pid;
