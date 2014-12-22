@@ -220,9 +220,11 @@ function getStatusText(statusCode) {
 }
 
 function processUrl(url) {
-    var sub = url.substring(1);
+    var sub = url.c(1);
     sub = sub.replace(/\//g, "-");
     sub = sub.replace(/\?/g, "-");
+    //if the request is too long cut it
+    sub = sub.substring(0, 254);
     return "/" + sub;
 
 }
