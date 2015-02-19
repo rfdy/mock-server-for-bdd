@@ -87,7 +87,7 @@ if (mockListFile) {
             }
             // find the X-Path
             var pathStart = mock.indexOf(HEADER_PATH) + HEADER_PATH.length;
-            var pathEnd = mock.indexOf('\n', pathStart);
+            var pathEnd = findPositiveMinimum(mock.indexOf('\n', pathStart), mock.indexOf('\r', pathStart));
             var path = mock.substring(pathStart, pathEnd);
 
             mocks[path] = mockFile;
@@ -106,15 +106,22 @@ http.createServer(function(request, response) {
         var filePath = path.join(__dirname, mock);
 
         var readStream = fileSystem.createReadStream(filePath);
-        // read the file into a string
-        var fileString = '';
+        // read the file into a buffer
+        var fileChunks = [];
+        var chunksLength = 0;
         readStream.on('data', function (chunk) {
-            fileString += chunk;
+            fileChunks.push(chunk);
+            chunksLength += chunk.length;
         });
         readStream.on('end', function() {
-           // parse the headers
-            var bodyStart = fileString.indexOf("\n\n") + 2;
-            var allHeaders = fileString.substring(0, bodyStart-2);
+            var responseData = Buffer.concat(fileChunks, chunksLength);
+            var fileString = responseData.toString();
+
+           // parse the headers.
+           // Find header division: (either \n\r\n\r, \n\n, or \r\n\r\n)
+            var headerEnd = findPositiveMinimum(fileString.indexOf("\n\n"), fileString.indexOf("\r\n\r\n"), fileString.indexOf("\n\r\n\r"));
+            var bodyStart = headerEnd + 2;
+            var allHeaders = fileString.substring(0, headerEnd);
             var headersArray = allHeaders.split('\n');
             var headerObj = {};
             var responseCode = 0;
@@ -136,7 +143,11 @@ http.createServer(function(request, response) {
             response.writeHead(responseCode, headerObj);
 
             // write the body
-            response.end(fileString.substring(bodyStart));
+            // get the position of the body start in the byte buffer
+            var beforeBody = fileString.substring(0,bodyStart);
+            var bodyStartIndexInBuffer = Buffer.byteLength(beforeBody);
+            response.write(responseData.slice(bodyStartIndexInBuffer));
+            response.end();
         });
 
         // Also mark the mock file as verified
@@ -149,6 +160,7 @@ http.createServer(function(request, response) {
         // Forward the api call to DCR
         console.log(api + request.url);
         var options = URL.parse(api + request.url);
+        options['method'] = request.method;
 
         //keep all the headers from the original request
         options['headers'] =  request.headers;
@@ -160,19 +172,20 @@ http.createServer(function(request, response) {
         //there is probably a better solution for this
         options['headers']['accept-encoding']='';
 
-        http.get(options, function(apiResponseStream) {
+        var forwardReq = http.request(options, function(apiResponseStream) {
 
-
-            var apiResponsePayload = ''
+            var parts = [];
+            var partLength = 0;
             apiResponseStream.on('data',function(buffer){
-                var part = buffer.toString();
-                apiResponsePayload += part;
+                parts.push(buffer);
+                partLength += buffer.length;
             });
 
-
             apiResponseStream.on('end',function(){
+                var apiResponsePayload = Buffer.concat(parts, partLength);
                 response.writeHead(apiResponseStream.statusCode, apiResponseStream.headers);
-                response.end(apiResponsePayload);
+                response.write(apiResponsePayload);
+                response.end();
 
 
                 // Also generate a mockfile
@@ -185,8 +198,10 @@ http.createServer(function(request, response) {
                     var mockfile = fileSystem.createWriteStream("generated"+processUrl(request.url));
                     var headers = "HTTP/1.1 "+ apiResponseStream.statusCode + " " + getStatusText(apiResponseStream.statusCode) + "\n";
                     for (var key in apiResponseStream.headers) {
-                        var obj = apiResponseStream.headers[key] + "\n";
-                        headers += key +": " + obj;
+                        if (key != 'content-length') {
+                            var obj = apiResponseStream.headers[key] + "\n";
+                            headers += key + ": " + obj;
+                        }
                     }
                     headers = headers + "X-Name: " + processUrl(request.url) +"\n";
                     headers = headers + "X-Path: " + request.url +"\n\n";
@@ -198,6 +213,10 @@ http.createServer(function(request, response) {
             });
 
         });
+        forwardReq.on('error', function(e) {
+            console.log("Error: can't forward request: " + e.message);
+        });
+        request.pipe(forwardReq);
     }
 })
 .listen(port);
@@ -217,6 +236,16 @@ function getStatusText(statusCode) {
         case 500: return "Internal Server Error";
         default: return "Unknown";
     }
+}
+
+function findPositiveMinimum() {
+    var positives = [];
+    for (var i = 0; i < arguments.length; i++) {
+        if (arguments[i] >= 0) {
+            positives.push(arguments[i]);
+        }
+    }
+    return Math.min.apply(Math, positives);
 }
 
 function processUrl(url) {
